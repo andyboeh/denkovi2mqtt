@@ -2,7 +2,7 @@
 # (c) 2021 Andreas Böhler
 # License: Apache 2.0
 
-from pysnmp.hlapi import *
+from easysnmp import Session
 import paho.mqtt.client as mqtt
 import socket
 import json
@@ -22,50 +22,6 @@ elif os.path.exists('denkovi2mqtt.yaml'):
 else:
     print('Configuration file not found, exiting.')
     sys.exit(1)
-
-def get_relay_state(host, port, community):
-    iterator = getCmd(
-        SnmpEngine(),
-        CommunityData(community),
-        UdpTransportTarget((host, port)),
-        ContextData(),
-        ObjectType(ObjectIdentity('1.3.6.1.4.1.42505.8.3.5.0'))
-    )
-
-    errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
-
-    if errorIndication:
-        return False
-
-    elif errorStatus:
-        return False
-
-    else:
-        for varBind in varBinds:
-            return int(varBind[1])
-
-    return False
-
-def set_relay_state(host, port, community, state):
-    iterator = setCmd(
-        SnmpEngine(),
-        CommunityData(community),
-        UdpTransportTarget((host, port)),
-        ContextData(),
-        ObjectType(ObjectIdentity('1.3.6.1.4.1.42505.8.3.5.0'), Integer(state))
-    )
-
-    errorIndication, errorStatus, errorIndex, varBinds = next(iterator)
-
-    if errorIndication:
-        return False
-
-    elif errorStatus:
-        return False
-
-    else:
-        return True
-
 
 # Define MQTT event callbacks
 def on_connect(client, userdata, flags, rc):
@@ -99,10 +55,11 @@ def on_message(client, obj, msg):
             else:
                 state = dev['state'] & ~(1 << (number - 1))
 
-            if set_relay_state(dev['host'], dev['port'], dev['communitywrite'], state):
-                dev['state'] = state
-                payload = msg.payload
-                mqttc.publish(config['mqtt']['topic'] + '/light/' + name + '/state', payload=payload, retain=True)
+            if 'sessionwrite' in dev:
+                if dev['sessionwrite'].set('1.3.6.1.4.1.42505.8.3.5.0', state, snmp_type='INTEGER'):
+                    dev['state'] = state
+                    payload = msg.payload
+                    mqttc.publish(config['mqtt']['topic'] + '/light/' + name + '/state', payload=payload, retain=True)
 
 def on_publish(client, obj, mid):
     print("Pub: " + str(mid))
@@ -135,6 +92,12 @@ mqttc.loop_start()
 
 for dev in config['denkovi']:
     dev['state'] = 0
+    try:
+        dev['sessionread'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communityread'], version=2)
+        dev['sessionwrite'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communitywrite'], version=2)
+    except:
+        print('Error creating session, device not available?')
+        continue
     for relay in dev['relays']:
         identifier = dev['id'] + '_relay_' + str(relay['number'])
         dtopic = config['mqtt']['discovery_prefix'] + '/light/' + \
@@ -155,6 +118,7 @@ for dev in config['denkovi']:
           },
         }
         
+        #payload = ""
         payload = json.dumps(payload)
         mqttc.publish(dtopic, payload=payload, retain=True)
         mqttc.publish(topic + '/state', payload="OFF", retain=True)
@@ -162,8 +126,10 @@ for dev in config['denkovi']:
 
 while True:
     for dev in config['denkovi']:
-        state = get_relay_state(dev['host'], dev['port'], dev['communityread'])
-        if state is False:
+        if 'sessionread' in dev:
+            state = dev['sessionread'].get('1.3.6.1.4.1.42505.8.3.5.0')
+            state = int(state.value)
+        else:
             continue
 
         for relay in dev['relays']:
