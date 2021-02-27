@@ -1,0 +1,83 @@
+denkovi:
+  - host: smartden1.lan
+    port: 161
+    communityread: public
+    communitywrite: private
+    id: smartden1
+    name: SmartDEN1
+    relays:
+      - number: 1
+        name: EG Bad Lichtleiste
+      - number: 2
+        name: EG Bad
+      - number: 3
+        name: EG WC
+      - number: 4
+        name: EG WC Spots
+      - number: 5
+        name: EG Essbereich Spots
+      - number: 6
+        name: EG Küche Spots
+      - number: 7
+        name: EG Wohnzimmer 1
+      - number: 8
+        name: EG Wohnzimmer 2
+  - host: smartden2.lan
+    port: 161
+    communityread: public
+    communitywrite: private
+    id: smartden2
+    name: SmartDEN2
+    relays:
+      - number: 1
+        name: EG Gang
+      - number: 5
+        name: EG Küche Arbeitslicht
+      - number: 6
+        name: EG Essbereich Lampe
+      - number: 7
+        name: EG Wohnzimmer Lampe
+  - host: smartden3.lan
+    port: 161
+    communityread: public
+    communitywrite: private
+    id: smartden3
+    name: SmartDEN3
+    relays:
+      - number: 1
+        name: 1. OG Gang
+  - host: smartden4.lan
+    port: 161
+    communityread: public
+    communitywrite: private
+    id: smartden4
+    name: SmartDEN4
+    relays:
+      - number: 1
+        name: 1. OG Büro
+      - number: 2
+        name: 1. OG Wohnzimmer
+      - number: 3
+        name: 1. OG Wintergarten
+      - number: 4
+        name: 1. OG WC
+      - number: 5
+        name: 1. OG Bad
+      - number: 6
+        name: 1. OG Bastelzimmer
+      - number: 7
+        name: 1. OG Küche
+      - number: 8
+        name: 1. OG Essbereich
+
+mqtt:
+  host: domoticz.lan
+  port: 1883
+  username: 
+  password: 
+  discovery_prefix: homeassistant
+  topic: denkovi
+  debug: false
+  
+general:
+  interval: 1
