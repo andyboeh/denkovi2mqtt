@@ -1,0 +1,15 @@
+[Unit]
+Description=denkovi2mqtt
+After=network.target
+
+[Service]
+User=denkovi2mqtt
+Group=denkovi2mqtt
+WorkingDirectory=/opt/denkovi2mqtt
+Type=simple
+ExecStart=/opt/denkovi2mqtt/denkovi2mqtt.py
+Restart=always
+TimeoutStopSec=30
+
+[Install]
+WantedBy=mult-user.target

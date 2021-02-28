@@ -1,0 +1,14 @@
+post_install() {
+  # Create user
+  systemd-sysusers denkovi2mqtt.conf
+  chown -R denkovi2mqtt:denkovi2mqtt /opt/denkovi2mqtt
+}
+
+post_upgrade() {
+  systemctl daemon-reload
+}
+
+post_remove() {
+  systemctl stop denkovi2mqtt.service
+  true
+}
