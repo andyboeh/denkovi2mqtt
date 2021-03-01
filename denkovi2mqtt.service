@@ -1,6 +1,7 @@
 [Unit]
 Description=denkovi2mqtt
 After=network.target
+StartLimitIntervalSec=0
 
 [Service]
 User=denkovi2mqtt
@@ -9,6 +10,7 @@ WorkingDirectory=/opt/denkovi2mqtt
 Type=simple
 ExecStart=/opt/denkovi2mqtt/denkovi2mqtt.py
 Restart=always
+RestartSec=10
 TimeoutStopSec=30
 
 [Install]
