@@ -8,6 +8,7 @@ User=denkovi2mqtt
 Group=denkovi2mqtt
 WorkingDirectory=/opt/denkovi2mqtt
 Type=simple
+Environment="PYTHONUNBUFFERED=1"
 ExecStart=/opt/denkovi2mqtt/denkovi2mqtt.py
 Restart=always
 RestartSec=10
