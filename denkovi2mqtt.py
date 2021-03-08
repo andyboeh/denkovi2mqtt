@@ -85,51 +85,68 @@ if config['mqtt']['debug']:
 
 if config['mqtt']['username'] and config['mqtt']['password']:
     mqttc.username_pw_set(config['mqtt']['username'], config['mqtt']['password'])
-mqttc.connect(config['mqtt']['host'], config['mqtt']['port'], 60)
+
+try:
+    mqttc.connect(config['mqtt']['host'], config['mqtt']['port'], 60)
+except:
+    print('Could not connect to MQTT, will now quit')
+    sys.exit(1)
 mqttc.loop_start()
 
 # Set up discovery structure
 
-for dev in config['denkovi']:
-    dev['state'] = 0
-    try:
-        dev['sessionread'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communityread'], version=2)
-        dev['sessionwrite'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communitywrite'], version=2)
-    except:
-        print('Error creating session, device not available?')
-        continue
-    for relay in dev['relays']:
-        identifier = dev['id'] + '_relay_' + str(relay['number'])
-        dtopic = config['mqtt']['discovery_prefix'] + '/light/' + \
-                 identifier + '/config'
-        topic = config['mqtt']['topic'] + '/light/' + identifier
-        name = relay['name']
-        
-        payload = {
-          "state_topic" : topic + '/state',
-          "command_topic" : topic + '/set',
-          "name" : name,
-          "unique_id" : identifier,
-          "device" : {
-            "identifiers" : base64.b64encode(dev['host'].encode('ascii')).decode('ascii'),
-            "manufacturer" : 'Denkovi',
-            "name" : dev['name'],
-            "model" : "SmartDEN",
-          },
-        }
-        
-        #payload = ""
-        payload = json.dumps(payload)
-        mqttc.publish(dtopic, payload=payload, retain=True)
-        mqttc.publish(topic + '/state', payload="OFF", retain=True)
-        mqttc.subscribe(topic + "/set")
+def connect_and_setup():
+    for dev in config['denkovi']:
+        dev['state'] = 0
+        if 'sessionread' in dev and 'sessionwrite' in dev:
+            print('Already connected to ' + dev['id'] + ', continuing')
+            continue
+        try:
+            dev['sessionread'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communityread'], version=2)
+            dev['sessionwrite'] = Session(hostname=dev['host'], remote_port=dev['port'], community=dev['communitywrite'], version=2)
+        except:
+            print('Error creating session, device not available?')
+            continue
+        for relay in dev['relays']:
+            identifier = dev['id'] + '_relay_' + str(relay['number'])
+            dtopic = config['mqtt']['discovery_prefix'] + '/light/' + \
+                     identifier + '/config'
+            topic = config['mqtt']['topic'] + '/light/' + identifier
+            name = relay['name']
+            
+            payload = {
+              "state_topic" : topic + '/state',
+              "command_topic" : topic + '/set',
+              "name" : name,
+              "unique_id" : identifier,
+              "device" : {
+                "identifiers" : base64.b64encode(dev['host'].encode('ascii')).decode('ascii'),
+                "manufacturer" : 'Denkovi',
+                "name" : dev['name'],
+                "model" : "SmartDEN",
+              },
+            }
+            
+            #payload = ""
+            payload = json.dumps(payload)
+            mqttc.publish(dtopic, payload=payload, retain=True)
+            mqttc.publish(topic + '/state', payload="OFF", retain=True)
+            mqttc.subscribe(topic + "/set")
 
 while True:
     for dev in config['denkovi']:
         if 'sessionread' in dev:
-            state = dev['sessionread'].get('1.3.6.1.4.1.42505.8.3.5.0')
-            state = int(state.value)
+            try:
+                state = dev['sessionread'].get('1.3.6.1.4.1.42505.8.3.5.0')
+                state = int(state.value)
+            except:
+                print('Could not get value, connection lost?')
+                del dev['sessionread']
+                del dev['sessionwrite']
+                connect_and_setup()
+                continue
         else:
+            connect_and_setup()
             continue
 
         for relay in dev['relays']:
