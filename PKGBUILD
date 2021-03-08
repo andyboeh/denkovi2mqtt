@@ -16,7 +16,7 @@ conflicts=('denkovi2mqtt')
 sha256sums=('SKIP'
             '6de50bccbce4a5d387645ea8aefb2ba47c2a3d4e03ad6334f42bb5729266a3b7'
             'c7f86396cad9849d5aa8eba207c4c5c03c5851d86db0eaefb16ee248c713ace5'
-            '4c67fde53f11888b068c5d68c1936935cbd3c253f2a1eab9ce7cf73860e1d901')
+            '53c511e65083aec86854ad42d15c71ee838112decc37e437760cb2c881f886cf')
 
 backup=('opt/denkovi2mqtt/denkovi2mqtt.yaml')
 
