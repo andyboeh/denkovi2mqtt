@@ -16,9 +16,11 @@ import base64
 if os.path.exists('/config/denkovi2mqtt.yaml'):
     fp = open('/config/denkovi2mqtt.yaml', 'r')
     config = yaml.safe_load(fp)
+    fp.close()
 elif os.path.exists('denkovi2mqtt.yaml'):
     fp = open('denkovi2mqtt.yaml', 'r')
     config = yaml.safe_load(fp)
+    fp.close()
 else:
     print('Configuration file not found, exiting.')
     sys.exit(1)
