@@ -25,6 +25,8 @@ else:
     print('Configuration file not found, exiting.')
     sys.exit(1)
 
+subscriptions = []
+
 # Define MQTT event callbacks
 def on_connect(client, userdata, flags, rc):
     connect_statuses = {
@@ -35,7 +37,11 @@ def on_connect(client, userdata, flags, rc):
         4: "bad username or password",
         5: "not authorised"
     }
-    print("MQTT: " + connect_statuses.get(rc, "Unknown error"))
+    if rc != 0:
+        print("MQTT: " + connect_statuses.get(rc, "Unknown error"))
+    else:
+        for topic in subscriptions:
+            mqttc.subscribe(topic)
 
 def on_disconnect(client, userdata, rc):
     if rc != 0:
@@ -133,7 +139,10 @@ def connect_and_setup():
             payload = json.dumps(payload)
             mqttc.publish(dtopic, payload=payload, retain=True)
             mqttc.publish(topic + '/state', payload="OFF", retain=True)
-            mqttc.subscribe(topic + "/set")
+            stopic = topic + "/set"
+            if not stopic in subscriptions:
+                subscriptions.append(stopic)
+            mqttc.subscribe(stopic)
 
 while True:
     for dev in config['denkovi']:
