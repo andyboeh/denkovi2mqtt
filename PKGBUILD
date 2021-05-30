@@ -1,5 +1,5 @@
 pkgname=denkovi2mqtt-git
-pkgver=r2.429c5c9
+pkgver=r9.295dc53
 pkgrel=1
 pkgdesc="Simple Denkovi SmartDEN to MQTT bridge"
 arch=('any')
@@ -16,7 +16,7 @@ conflicts=('denkovi2mqtt')
 sha256sums=('SKIP'
             '6de50bccbce4a5d387645ea8aefb2ba47c2a3d4e03ad6334f42bb5729266a3b7'
             'c7f86396cad9849d5aa8eba207c4c5c03c5851d86db0eaefb16ee248c713ace5'
-            '53c511e65083aec86854ad42d15c71ee838112decc37e437760cb2c881f886cf')
+            'c6636ed9833b339472ebb6f6e49fb5e4be06bd35436daf1601491620e9006f9b')
 
 backup=('opt/denkovi2mqtt/denkovi2mqtt.yaml')
 
